@@ -244,6 +244,18 @@ getcolor(const char *s, XftColor *color)
 static void
 setupdc(void)
 {
+
+	/* section to get and overwrite selectedbackground and border colors via pywal - uses mmwm file */
+	FILE *xmenucolors;
+	char colorfile[] = COLORS_FILE;
+	if ((xmenucolors = fopen (colorfile, "r"))){
+		fscanf (xmenucolors, "%s %s", DUMMY, SELCOLOR);
+		fclose (xmenucolors);
+	}
+	static const char *selbackground_color = SELCOLOR;
+	static const char *border_color = SELCOLOR;
+	/* end code addition */
+
 	/* get color pixels */
 	getcolor(background_color,    &dc.normal[ColorBG]);
 	getcolor(foreground_color,    &dc.normal[ColorFG]);
