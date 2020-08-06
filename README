@@ -1,4 +1,6 @@
-                                 XMenu
+Added: gaps between root and sub menus, pywal support
+
+				XMenu
 
 XMenu is a menu utility for X.
 XMenu receives a menu specification in stdin, shows a menu for the user
