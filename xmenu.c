@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <X11/Xresource.h>
 #include <X11/XKBlib.h>
 #include <X11/Xft/Xft.h>
 #include <Imlib2.h>
@@ -71,7 +70,6 @@ struct Menu {
 };
 
 /* functions declarations */
-static void getresources(void);
 static void getcolor(const char *s, XftColor *color);
 static void setupdc(void);
 static void calcgeom(struct Geometry *geom);
@@ -153,7 +151,6 @@ main(int argc, char *argv[])
 	imlib_context_set_colormap(colormap);
 
 	/* setup */
-	getresources();
 	setupdc();
 	calcgeom(&geom);
 
@@ -186,52 +183,6 @@ main(int argc, char *argv[])
 	return 0;
 }
 
-/* read xrdb for configuration options */
-static void
-getresources(void)
-{
-	char *xrm;
-	long n;
-	char *type;
-	XrmDatabase xdb;
-	XrmValue xval;
-
-	XrmInitialize();
-	if ((xrm = XResourceManagerString(dpy)) == NULL)
-		return;
-
-	xdb = XrmGetStringDatabase(xrm);
-
-	if (XrmGetResource(xdb, "xmenu.borderWidth", "*", &type, &xval) == True)
-		if ((n = strtol(xval.addr, NULL, 10)) > 0)
-			border_pixels = n;
-	if (XrmGetResource(xdb, "xmenu.separatorWidth", "*", &type, &xval) == True)
-		if ((n = strtol(xval.addr, NULL, 10)) > 0)
-			separator_pixels = n;
-	if (XrmGetResource(xdb, "xmenu.height", "*", &type, &xval) == True)
-		if ((n = strtol(xval.addr, NULL, 10)) > 0)
-			height_pixels = n;
-	if (XrmGetResource(xdb, "xmenu.width", "*", &type, &xval) == True)
-		if ((n = strtol(xval.addr, NULL, 10)) > 0)
-			width_pixels = n;
-	if (XrmGetResource(xdb, "xmenu.background", "*", &type, &xval) == True)
-		background_color = strdup(xval.addr);
-	if (XrmGetResource(xdb, "xmenu.foreground", "*", &type, &xval) == True)
-		foreground_color = strdup(xval.addr);
-	if (XrmGetResource(xdb, "xmenu.selbackground", "*", &type, &xval) == True)
-		selbackground_color = strdup(xval.addr);
-	if (XrmGetResource(xdb, "xmenu.selforeground", "*", &type, &xval) == True)
-		selforeground_color = strdup(xval.addr);
-	if (XrmGetResource(xdb, "xmenu.separator", "*", &type, &xval) == True)
-		separator_color = strdup(xval.addr);
-	if (XrmGetResource(xdb, "xmenu.border", "*", &type, &xval) == True)
-		border_color = strdup(xval.addr);
-	if (XrmGetResource(xdb, "xmenu.font", "*", &type, &xval) == True)
-		font = strdup(xval.addr);
-
-	XrmDestroyDatabase(xdb);
-}
-
 /* get color from color string */
 static void
 getcolor(const char *s, XftColor *color)
@@ -249,11 +200,14 @@ setupdc(void)
 	FILE *xmenucolors;
 	char colorfile[] = COLORS_FILE;
 	if ((xmenucolors = fopen (colorfile, "r"))){
-		fscanf (xmenucolors, "%s %s", DUMMY, SELCOLOR);
+		fscanf (xmenucolors, "%s %s %s", SELCOLOR, BGCOLOR, FGCOLOR);
 		fclose (xmenucolors);
 	}
 	static const char *selbackground_color = SELCOLOR;
 	static const char *border_color = SELCOLOR;
+	static const char *background_color = BGCOLOR;
+	static const char *foreground_color = FGCOLOR;
+	static const char *selforeground_color = FGCOLOR;
 	/* end code addition */
 
 	/* get color pixels */
